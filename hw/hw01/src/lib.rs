@@ -1,9 +1,9 @@
 #[cfg(test)]
 
 pub mod problem1;
+pub mod problem2;
+pub mod problem3;
+pub mod problem4;
 
-mod tests {
-    #[test]
-    fn it_works() {
-    }
-}
+pub mod tests_provided;
+pub mod tests_student;
