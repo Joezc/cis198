@@ -1,28 +1,28 @@
 #[cfg(test)]
 
-use first::BST;
+use first::BTree;
 
 #[test]
 fn test_insert() {
-    let mut bst = BST::new();
+    let mut bst = BTree::new();
 
-    for i in 0 .. 10000 {
-        assert!(bst.insert(i));
+    for i in 0 .. 1000 {
+        bst.insert(i);
     }
 
-    for i in 0 .. 10000 {
+    for i in 0 .. 1000 {
         assert!(bst.search(i));
     }
 }
 
 #[test]
 fn test_search() {
-    let mut bst = BST::new();
-    assert!(bst.insert(1));
-    assert!(bst.insert(10));
-    assert!(bst.insert(4));
-    assert!(bst.insert(7));
-    assert!(bst.insert(2));
+    let mut bst = BTree::new();
+    bst.insert(1);
+    bst.insert(10);
+    bst.insert(4);
+    bst.insert(7);
+    bst.insert(2);
 
     assert!(bst.search(1));
     assert!(!bst.search(11));

@@ -1,3 +1,7 @@
-res/
+
 */*/target/
 */*/Cargo.lock
+
+hw02/.idea/
+hw02/Cargo.lock
+hw02/target/

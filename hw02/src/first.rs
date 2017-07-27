@@ -1,90 +1,43 @@
-use std::mem;
+use std::cmp::Ordering;
 
 #[derive(Debug)]
-pub struct BST {
-    root: Link,
-}
-
-#[derive(Debug)]
-enum Link {
+pub enum BTree<T: Ord> {
+    Leaf {
+        v: T,
+        l: Box<BTree<T>>,
+        r: Box<BTree<T>>,
+    },
     Empty,
-    More(Box<Node>),
 }
 
-#[derive(Debug)]
-struct Node {
-    elem: i32,
-    left: Link,
-    right: Link,
-}
-
-impl Default for BST {
-    fn default() -> Self {
-        BST { root: Link::Empty }
-    }
-}
-
-impl BST {
-    pub fn new() -> Self {
-        Default::default()
+impl<T: Ord> BTree<T> {
+    pub fn new() -> BTree<T> {
+        BTree::Empty
     }
 
-    pub fn insert(&mut self, elem: i32) -> bool {
-        loop {
-            let tmp = cur_link;
-            if let Link::More(ref mut node) = *tmp {
-                if elem < node.elem {
-                    cur_link = &mut node.left;
-                } else if elem == node.elem {
-                    return false
-                } else {
-                    cur_link = &mut node.right;
+    pub fn insert(&mut self, nv: T) {
+        match self {
+            &mut BTree::Leaf { ref v, ref mut l, ref mut r } => match nv.cmp(v) {
+                Ordering::Less => r.insert(nv),
+                Ordering::Greater => l.insert(nv),
+                _ => return
+            },
+            &mut BTree::Empty => *self = BTree::Leaf { v: nv,
+                l: Box::new(BTree::Empty),
+                r: Box::new(BTree::Empty)},
+        };
+    }
+
+    pub fn search(&self, fv: T) -> bool {
+        match self {
+            &BTree::Leaf { ref v, ref l, ref r } => {
+                match fv.cmp(v) {
+                    Ordering::Less => r.search(fv),
+                    Ordering::Greater => l.search(fv),
+                    _ => true
                 }
-            } else {
-                cur_link = &mut tmp;
-                break;
-            }
-        }
-
-        *cur_link = Link::More(Box::new(Node {
-            elem: elem,
-            left: Link::Empty,
-            right: Link::Empty,
-        }))
-
-        true
-    }
-
-    pub fn search(&self, elem: i32) -> bool {
-        let mut cur_link = &self.root;
-
-        while let Link::More(ref node) = *cur_link {
-            if elem < node.elem {
-                cur_link = &node.left;
-            } else if elem == node.elem {
-                return false
-            } else {
-                cur_link = &node.right;
-            }
-        }
-
-        false
-    }
-}
-
-impl Drop for BST {
-    fn drop(&mut self) {
-        let mut stack = vec![];
-        stack.push(mem::replace(&mut self.root, Link::Empty));
-
-        while let Some(Link::More(mut node)) = stack.pop() {
-            if let Link::More(_) = node.left {
-                stack.push(mem::replace(&mut node.left, Link::Empty));
-            }
-
-            if let Link::More(_) = node.right {
-                stack.push(mem::replace(&mut node.right, Link::Empty));
-            }
+            },
+            &BTree::Empty => false,
         }
     }
 }
