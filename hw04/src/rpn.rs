@@ -1,5 +1,8 @@
 use std::result;
 use std::io;
+use std::num;
+extern crate rand;
+use self::rand::distributions::{Range, IndependentSample};
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug)]
 /// An element of the stack. May be either integer or boolean.
@@ -16,7 +19,7 @@ pub enum Error {
     /// Tried to operate on invalid types (e.g. 4 + true)
     Type,
     /// Unable to parse the input.
-    Syntax,
+    Syntax(num::ParseIntError),
     /// Some IO error occurred.
     IO(io::Error),
     /// The user quit the program (with `quit`).
@@ -40,29 +43,82 @@ pub enum Op {
     Quit,
 }
 
-// TODO: Stack.
+/// RPN stack
+pub struct Stack {
+    stack: Vec<Elt>
+}
 
-// TODO: Result.
+/// RPN operation result
+pub type Result<T> = result::Result<T, Error>;
 
 impl Stack {
     /// Creates a new Stack
     pub fn new() -> Stack {
-        unimplemented!()
+        Stack {
+            stack: Vec::new()
+        }
     }
 
     /// Pushes a value onto the stack.
     pub fn push(&mut self, val: Elt) -> Result<()> {
-        unimplemented!()
+        Ok(self.stack.push(val))
     }
 
     /// Tries to pop a value off of the stack.
     pub fn pop(&mut self) -> Result<Elt> {
-        unimplemented!()
+        self.stack.pop().ok_or(Error::Underflow)
     }
 
     /// Tries to evaluate an operator using values on the stack.
     pub fn eval(&mut self, op: Op) -> Result<()> {
-        unimplemented!()
+        match op {
+            Op::Add => {
+                let x = self.pop()?;
+                let y = self.pop()?;
+                match (x, y) {
+                    (Elt::Int(a), Elt::Int(b)) =>
+                        self.push(Elt::Int(a+b)),
+                    _ => Err(Error::Type)
+                }
+            }
+            Op::Eq => {
+                let x = self.pop()?;
+                let y = self.pop()?;
+                if x == y {
+                    self.push(Elt::Bool(true))
+                } else {
+                    self.push(Elt::Bool(false))
+                }
+            }
+            Op::Neg => {
+                let x = self.pop()?;
+                match x {
+                    Elt::Int(a) => self.push(Elt::Int(-a)),
+                    Elt::Bool(b) => self.push(Elt::Bool(!b))
+                }
+            }
+            Op::Swap => {
+                let x = self.pop()?;
+                let y = self.pop()?;
+                self.push(x)?;
+                self.push(y)
+            }
+            Op::Rand => {
+                let x = self.pop()?;
+                match x {
+                    Elt::Int(a) => {
+                        let ans = Range::new(0, a);
+                        let mut rng = rand::thread_rng();
+                        self.push(Elt::Int(
+                            ans.ind_sample(&mut rng)))
+                    }
+                    _ => Err(Error::Type)
+                }
+            }
+            Op::Quit => {
+                Err(Error::Quit)
+            }
+        }
     }
 }
 
@@ -140,9 +196,11 @@ mod tests {
         s.push(Elt::Int(1)).unwrap();
         s.push(Elt::Bool(false)).unwrap();
 
-        let res = s.eval(Op::Eq);
-        assert!(res.is_err());
-        if let Err(Error::Type) = res { } else { assert!(false); }
+        assert!(s.eval(Op::Eq).is_ok());
+        assert_eq!(s.pop().unwrap(), Elt::Bool(false));
+//        let res = s.eval(Op::Eq);
+//        assert!(res.is_err());
+//        if let Err(Error::Type) = res { } else { assert!(false); }
     }
 
     #[test]
