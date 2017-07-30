@@ -81,3 +81,5 @@ tramp
 # sftp configuration file
 sftp-config.json
 
+hw05.iml
+.idea/

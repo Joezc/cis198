@@ -57,7 +57,13 @@ impl Board {
             };
 
             // Add the new room to self.rooms
-            unimplemented!();
+            self.rooms.push(Rc::new(RefCell::new(
+                Room {
+                    name: name.to_string(),
+                    contents: curios,
+                    halls: Vec::new(),
+                    wumpus: wumpus
+                })))
         }
         Ok(())
     }
@@ -75,10 +81,15 @@ impl Board {
             let mut hall = Hall::new();
 
             // Add room links to halls
-            unimplemented!();
+            let num1: i64 = h[0].as_i64().ok_or("Unable to parse room number of hall".to_string())?;
+            let num2: u64 = h[1].as_u64().ok_or("Unable to parse room number of hall".to_string())?;
+            hall.left = self.rooms[num1 as usize].clone();
+            hall.right = self.rooms[num2 as usize].clone();
 
             // Add hall links to rooms
-            unimplemented!();
+            let tmp = Rc::new(hall);
+            self.rooms[num1 as usize].borrow_mut().halls.push(tmp.clone());
+            self.rooms[num2 as usize].borrow_mut().halls.push(tmp.clone());
         }
         Ok(())
     }

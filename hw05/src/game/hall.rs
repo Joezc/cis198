@@ -11,13 +11,19 @@ pub struct Hall {
 impl Hall {
     pub fn new() -> Hall {
         // TODO: Implement
-        unimplemented!();
+        Hall {
+            left: Rc::new(RefCell::new(Room::new())),
+            right: Rc::new(RefCell::new(Room::new()))
+        }
     }
 
     /// Given a Room `room`, find the room at the other end of Hall `self`.
     pub fn other(&self, room: &Room) -> Rc<RefCell<Room>> {
-        // TODO: Implement
-        unimplemented!();
+        if *room == *self.left.borrow() {
+            self.right.clone()
+        } else {
+            self.left.clone()
+        }
     }
 
 }
