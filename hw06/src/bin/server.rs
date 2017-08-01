@@ -24,6 +24,19 @@ macro_rules! try_or_server_err {
     })
 }
 
+fn read_file(file_name: &str) -> String {
+    let mut f = File::open(file_name).expect("file not found");
+    let mut buffer = String::new();
+    f.read_to_string(&mut buffer).expect("Wrong reading the file");
+    buffer
+}
+
+fn write_file(file_name: &str, content: String) {
+    let mut buffer : File;
+    buffer = OpenOptions::new().write(true).append(true).create(true).open(HTML_DATA).unwrap();
+    buffer.write_all(content.as_bytes()).expect("Wrong writing to the file");
+}
+
 fn req_handler(mut req: Request, mut res: Response) {
     match req.method {
         hyper::Get => {
@@ -33,6 +46,7 @@ fn req_handler(mut req: Request, mut res: Response) {
             // order to return an internal server error.
             let mut buf = String::new();
             // TODO
+            buf = buf + &read_file(HTML_HEADER) + &read_file(HTML_DATA) + &read_file(HTML_FOOTER);
 
             // And return buf as the response.
             *res.status_mut() = StatusCode::Ok;
@@ -41,6 +55,16 @@ fn req_handler(mut req: Request, mut res: Response) {
         hyper::Post => {
             // Read the message out of the `req` into a buffer, handle it, and respond with Ok.
             // TODO
+            let mut buf = String::new();
+            req.read_to_string(&mut buf).unwrap();
+
+            let decoded: Message = json::decode(&buf).unwrap();
+            let mut ans = String::new();
+            ans = ans + &decoded.user + ": " + &decoded.text + "\n";
+
+            write_file(HTML_DATA, ans);
+            *res.status_mut() = StatusCode::Ok;
+            res.send(String::new().as_bytes()).unwrap();
         },
         _ => *res.status_mut() = StatusCode::ImATeapot,
     }
@@ -54,5 +78,22 @@ fn main() {
             Err(e) => println!("{:?}", e),
         },
         Err(e) => println!("{:?}", e),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::HTML_HEADER;
+    use super::HTML_DATA;
+    #[test]
+    fn test_read_file() {
+        let file_name = HTML_DATA;
+        println!("{}", super::read_file(file_name));
+    }
+
+    #[test]
+    fn test_write_file() {
+        let file_name = HTML_DATA;
+        super::write_file(file_name, "dsd".to_string());
     }
 }

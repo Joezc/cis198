@@ -29,6 +29,10 @@ impl Message {
             user: user,
         }
     }
+
+    pub fn to_string(&self) -> String {
+        json::encode(&self).unwrap()
+    }
 }
 
 pub struct UserClient {
@@ -47,11 +51,34 @@ impl UserClient {
     }
 
     // TODO: Implement send_msg
+    pub fn send_msg(&self, content: String) -> hyper::Result<(StatusCode, String)> {
+        let m = Message {
+            user: self.username.clone(),
+            text: content
+        };
+        let mut response = try!(self.client.post(&self.server_addr).body(&m.to_string()).send());
+        let mut buf = String::new();
+        response.read_to_string(&mut buf).unwrap();
+        Ok((response.status, buf))
+    }
 
     pub fn get_content(&self) -> hyper::Result<(StatusCode, String)> {
         let mut response = try!(self.client.get(&self.server_addr).send());
         let mut buf = String::new();
         response.read_to_string(&mut buf).unwrap();
         Ok((response.status, buf))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Message;
+    #[test]
+    fn test_message_tostring() {
+        let m = Message {
+            user : "zc".to_string(),
+            text : "sd".to_string()
+        };
+        println!("{}", m.to_string());
     }
 }
