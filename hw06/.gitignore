@@ -81,5 +81,5 @@ tramp
 # sftp configuration file
 sftp-config.json
 
-.idea
-hw06.iml
+/.idea/
+/hw06.iml

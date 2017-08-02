@@ -6,6 +6,7 @@ use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 
+use hyper::Client;
 use hyper::server::{Request, Response, Server};
 use hyper::status::StatusCode;
 use rustc_serialize::json;
@@ -62,7 +63,15 @@ fn req_handler(mut req: Request, mut res: Response) {
             let mut ans = String::new();
             ans = ans + &decoded.user + ": " + &decoded.text + "\n";
 
-            write_file(HTML_DATA, ans);
+            let content: &str = &decoded.text;
+            let vec: Vec<&str> = content.split(" ").collect();
+            if vec[0] == "choose" {
+                let bot_client = Client::new();
+                let bot_url = "http://".to_string() + &BOT_ADDR;
+                let mut response = bot_client.post(&bot_url).body(content).send().unwrap();
+            }
+
+            write_file(HTML_DATA, ans + "<br>");
             *res.status_mut() = StatusCode::Ok;
             res.send(String::new().as_bytes()).unwrap();
         },
@@ -83,8 +92,8 @@ fn main() {
 
 #[cfg(test)]
 mod test {
-    use super::HTML_HEADER;
-    use super::HTML_DATA;
+    use super::{HTML_HEADER, HTML_DATA, BOT_ADDR};
+    use hyper::Client;
     #[test]
     fn test_read_file() {
         let file_name = HTML_DATA;
@@ -95,5 +104,18 @@ mod test {
     fn test_write_file() {
         let file_name = HTML_DATA;
         super::write_file(file_name, "dsd".to_string());
+    }
+
+    #[test]
+    fn test_send_to_bot() {
+        let buf = "choose 123 21".to_string();
+        let bot_client = Client::new();
+        let bot_url = "http://".to_string() + &BOT_ADDR;
+        match bot_client.post(&bot_url).body(&buf).send() {
+            Ok(response) => {
+                println!("{}", response.status);
+            },
+            Err(e) => println!("{:?}", e),
+        };
     }
 }
