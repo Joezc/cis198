@@ -4,6 +4,11 @@ version = "0.1.0"
 authors = ["CIS 198 <cis198@cis.upenn.edu>"]
 
 [dependencies]
-hyper = "0.7.2"
-rustc-serialize = "0.3"
-websocket = "0.15.1"
+#hyper = "0.7.2"
+#rustc-serialize = "0.3"
+#websocket = "0.15.1"
+hyper = "0.11.2"
+rustc-serialize = "0.3.24"
+websocket = "0.20.2"
+futures = "0.1.14"
+pretty_env_logger = "0.1.1"
