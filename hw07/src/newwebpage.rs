@@ -8,7 +8,7 @@ use std::io::{Read};
 
 use self::futures::future::FutureResult;
 
-use hyper::header::{ContentLength, ContentType};
+use hyper::header::ContentLength;
 use hyper::server::{Http, Service, Request, Response};
 
 const HTTP_ADDR: &'static str = "0.0.0.0:1980";
