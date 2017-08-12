@@ -1,2 +1,2 @@
 Learn Rust
-Already pass all homework from hw01 to hw07
+My solution to cis198 hw01 to hw07
